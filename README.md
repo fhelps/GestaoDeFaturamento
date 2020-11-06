@@ -1,4 +1,4 @@
-# Adonis Blog Demo :triangular_ruler:
+# Gestão de faturamento
 
 This repo contains an example application of the Adonis Framework. You must checkout the source code or the API docs on official website to learn more.
 
