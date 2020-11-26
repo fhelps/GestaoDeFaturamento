@@ -1,0 +1,210 @@
+@layout('layout.app')
+
+@section('content')
+  @set('title', 'Calc')
+
+  <div class="relative px-4 pt-4 pb-20 bg-gray-50 sm:px-6 lg:pt-10 lg:pb-28 lg:px-8">
+    <div class="absolute inset-0">
+      <div class="bg-white h-1/3 sm:h-2/3"></div>
+    </div>
+
+    <div class="relative mx-auto max-w-7xl">
+      {{-- Section Title --}}
+      <div class="text-center">
+        
+        <h2 class="text-3xl font-extrabold leading-9 tracking-tight text-gray-900 sm:text-4xl sm:leading-10">
+          Calculadora
+        </h2>
+
+      </div>
+
+      <div class="container">
+
+        <form>
+            <div class="row">
+            <div class="col">
+                <label >Ativo</label>
+                <select class="custom-select" id="ativo">
+                    <option value="1">WDO - mini</option>
+                    <option value="2">DOL - cheio</option>
+                  </select>
+            </div>
+              <div class="col">
+                <label >Investimento Inicial</label>
+                <input type="number" value="22500" class="form-control" id="inicial" placeholder="">
+              </div>
+              <div class="col">
+                <label >Pontos</label>
+                <input type="number" value="1.5" class="form-control" id="ponto" placeholder="">
+              </div>
+              <div class="col">
+                <label >Quantidade</label>
+                <input type="number"  value="10" class="form-control" id="quantidade" placeholder="">
+              </div>
+            </div>
+        </form>
+        <br/>
+        
+        <button type="button" id="calcular" class="btn btn-primary btn-lg btn-block">Calcular</button>
+
+        <br/>
+
+        <table
+            id="resumo" 
+            class="table">
+        </table> 
+
+
+        <table 
+        class="table"
+        data-show-export="true"
+
+        id="table"
+        >
+        <thead class="thead-dark">
+            <tr>
+                <th data-field="number">#</th>
+                <th data-field="contrato">Contrato</th>
+                <th data-field="ponto">Ponto</th>   
+                <th data-field="operacao">Operação</th>     
+                <th data-field="lucro">Lucro</th>     
+                <th data-field="inicial">Inicial</th>  
+                <th data-field="final">Final</th>  
+                <th data-field="risco">Risco</th>
+                <th data-field="retorno">Retorno</th>  
+                <th data-field="quebra">Quebra</th>  
+            </tr>
+        </thead>
+        </table>
+        
+      </div>
+    </div>
+
+  </div>
+  <script>
+
+    var $table = $('#table')
+    let qtd = 0
+
+    $("#calcular").click(function() {
+        
+        qtd++;
+
+        let filtro = {
+            "inicial": parseFloat($("#inicial").val()),
+            "ponto": parseFloat($("#ponto").val()),
+            "quantidade": parseFloat($("#quantidade").val()),
+            "ativo": parseFloat($("#ativo").val())
+        }
+
+        if(filtro.ativo == 1)  {
+            if(filtro.inicial < 900){
+                alert("Mínimo 900,00 R$ para o WDO. ")
+                return
+            }
+        }
+        else 
+            if(filtro.inicial < 22500){
+                alert("Mínimo 22500,00 R$ para o DOL.")
+                return
+            }
+
+
+        console.log(filtro)
+
+        let data = []
+        let investimento = filtro.inicial
+        let trades
+        let contrato
+
+        let valor_contrato = (filtro.ativo == 1) ? 10 : 50;
+
+        for (let i = 0; i < filtro.quantidade; i++) {
+
+            
+            contrato = (filtro.ativo == 1) ? 
+            (filtro.inicial - (filtro.inicial % 900))/900 : 
+            (filtro.inicial - (filtro.inicial % 22500))/22500*5
+            
+            console.log("sobra da divisão:")
+            console.log((filtro.inicial - (filtro.inicial % 900))/900)
+            console.log("ponto:")
+            console.log(filtro.ponto*contrato*10)
+         
+            
+            trades = {
+                "number": i +1,
+                "contrato": contrato ,
+                "ponto": filtro.ponto,
+                "operacao": "R$ " + formatMoney(contrato*30*valor_contrato),
+                "lucro": "R$ " +formatMoney(filtro.ponto*contrato*valor_contrato),
+                "inicial": "R$ " +formatMoney(filtro.inicial),
+                "final": "R$ " +formatMoney(filtro.inicial + (filtro.ponto*contrato*valor_contrato)),
+                "final_clean": (filtro.inicial + (filtro.ponto*contrato*valor_contrato)),
+                "risco": (((contrato*30*valor_contrato) / filtro.inicial*100)).toFixed(2) + "%" ,
+                "retorno": (((filtro.ponto*contrato*valor_contrato)/filtro.inicial)*100).toFixed(2) + "%",
+                "quebra": (filtro.inicial/(contrato*30*valor_contrato)).toFixed(2),
+            }
+
+            filtro.inicial = filtro.inicial + (filtro.ponto*contrato*valor_contrato)
+
+            data.push(trades)
+            
+        }
+
+        let data_resumo = {
+            columns: [{
+                field: 'inicial',
+                title: 'Investimento'
+            }, {
+                field: 'final',
+                title: 'Acumulado'
+            }, {
+                field: 'lucro',
+                title: 'Lucro'
+            },{
+                field: 'porcem',
+                title: '%'
+            }],
+            data: [{
+                inicial: "R$ " + formatMoney(investimento),
+                final: data[data.length-1].final,
+                lucro: "R$ " + formatMoney((data[data.length-1].final_clean - investimento)),
+                porcem: ((((data[data.length-1].final_clean - investimento))/ investimento)*100).toFixed(2) + "%" 
+            }]
+        }
+        
+
+        console.log(data)
+
+        if(qtd == 1){
+            $table.bootstrapTable({data: data})
+            $('#resumo').bootstrapTable(data_resumo)
+        }
+        else{
+            $table.bootstrapTable("load", data)
+            $('#resumo').bootstrapTable("load", data_resumo.data)
+        }
+
+    });
+
+    function formatMoney(amount, decimalCount = 2, decimal = ".", thousands = ",") {
+        try {
+            decimalCount = Math.abs(decimalCount);
+            decimalCount = isNaN(decimalCount) ? 2 : decimalCount;
+        
+            const negativeSign = amount < 0 ? "-" : "";
+        
+            let i = parseInt(amount = Math.abs(Number(amount) || 0).toFixed(decimalCount)).toString();
+            let j = (i.length > 3) ? i.length % 3 : 0;
+        
+            return negativeSign + (j ? i.substr(0, j) + thousands : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + thousands) + (decimalCount ? decimal + Math.abs(amount - i).toFixed(decimalCount).slice(2) : "");
+        } 
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+  </script>
+  
+@endsection

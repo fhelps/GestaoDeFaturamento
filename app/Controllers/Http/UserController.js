@@ -5,7 +5,7 @@ const { validateAll } = use('Validator')
 
 class UserController {
 
-  index ({}) {
+  async index ({session}) {
     const users = await User.all()
 
     //converting to JSON array

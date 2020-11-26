@@ -31,6 +31,12 @@ class ResultController {
         return view.render('result.index', { results: results })
     }
 
+
+    async calc({view, params}){
+        return view.render('result.calc')
+
+    }
+
 }
 
 module.exports = ResultController

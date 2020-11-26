@@ -21,6 +21,25 @@ class PostController {
     return view.render('posts.index', { posts: posts.toJSON() })
   }
 
+  async index_2 ({ view }) {
+    /**
+     * Fetch all posts inside our database.
+     *
+     * ref: http://adonisjs.com/docs/4.1/lucid#_all
+     */
+    const posts = await Post.all()
+
+    /**
+     * Render the view 'posts.index'
+     * with the posts fetched as data.
+     *
+     * ref: http://adonisjs.com/docs/4.1/views
+     */
+    const postsJSON = posts.toJSON()
+
+    return postsJSON;
+  }
+
   create ({ view }) {
     /**
      * Render the view 'posts.create'.

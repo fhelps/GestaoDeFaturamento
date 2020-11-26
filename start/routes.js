@@ -32,12 +32,16 @@ Route.group(() => {
 Route.group(() => {
   Route.get('logout', 'SessionController.delete')
 
+  Route.get('calc', 'ResultController.calc')
+
   Route.get('results', 'ResultController.index')
   Route.get('results/:id', 'ResultController.index')
 
   //Usuarios
   Route.get('users', 'UserController.index')
 
+
+  Route.get('posts_2', 'PostController.index_2')
   Route.get('posts/create', 'PostController.create')
   Route.post('posts', 'PostController.store')
   Route.get('posts/:id/edit', 'PostController.edit')
